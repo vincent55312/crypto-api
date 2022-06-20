@@ -3,6 +3,9 @@ import { User } from "../entity/user"
 
 export async function createUser(user: User) {
     try {
+        if (await emailAlreadyExist(user.email)) {
+            throw new Error('Email : '+ user.email + ' already exist');
+        }
         await AppDataSource.initialize();
         let userSaved = await AppDataSource.manager.save(user);
         await AppDataSource.destroy();
@@ -22,5 +25,21 @@ export async function getAllUsers() {
     }
     catch(error) {
         throw error;
+    }
+}
+
+async function emailAlreadyExist(emailUser: string) {
+    try {
+        await AppDataSource.initialize();
+        let numberUsers = (await AppDataSource.manager.findBy(User, {email: emailUser})).length
+        await AppDataSource.destroy();
+        if (numberUsers > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    catch (error) {
+        return false;
     }
 }
