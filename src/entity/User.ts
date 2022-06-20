@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import * as encryption from '../database/tools/encryption'
 
 @Entity()
 export class User {
@@ -20,5 +21,20 @@ export class User {
         user.pseudo = jsonUser.pseudo;
         user.password = jsonUser.password;
         return user;
+    }
+
+    encryptPassword(): User {
+        this.password = encryption.Crypter.encrypt(this.password);
+        return this;
+    }
+
+    passwordVerify(password: string) : boolean {
+        console.log(password);
+        console.log(encryption.Crypter.decrypt(this.password));
+        if (password === encryption.Crypter.decrypt(this.password)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -4,8 +4,9 @@ import { User } from "../entity/user"
 export async function createUser(user: User) {
     try {
         await AppDataSource.initialize();
-        await AppDataSource.manager.save(user);
+        let userSaved = await AppDataSource.manager.save(user);
         await AppDataSource.destroy();
+        return userSaved;
     }
     catch (error) {
         throw error;

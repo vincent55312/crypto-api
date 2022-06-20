@@ -2,7 +2,6 @@ import * as express from 'express';
 import * as userRepository from './repository/user-repository';
 import * as bodyParser from 'body-parser';
 import { User } from './entity/user';
-
 const app = express();
 const port = 8080;
 
@@ -11,12 +10,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.post('/api/create', async (req, res) => {
     try {
-        await userRepository.createUser(User.getFromJson(req.body));
-        let users = await userRepository.getAllUsers();
-        console.log(users);
+        await userRepository.createUser(User.getFromJson(req.body).encryptPassword());
         res.sendStatus(200);
-    } catch(e) {
-        console.log(e);
+    } catch(error) {
+        console.log(error);
         res.sendStatus(404);
     }
 });
@@ -25,7 +22,7 @@ app.post('api/can-login', async (req, res) => {
     try {
         res.sendStatus(200);
     }
-    catch(e) {
+    catch(error) {
         res.sendStatus(404);
     }
 })
