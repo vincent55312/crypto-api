@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as userRepository from './repository/user-repository';
 import * as bodyParser from 'body-parser';
-import { User } from './entity/User';
+import { User } from './entity/user';
 
 const app = express();
 const port = 8080;
