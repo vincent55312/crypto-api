@@ -12,6 +12,9 @@ export async function createUser(user: User) {
         return userSaved;
     }
     catch (error) {
+        if (AppDataSource.isInitialized) {
+            await AppDataSource.destroy();
+        }
         throw error;
     }
 }
@@ -24,6 +27,9 @@ export async function getAllUsers() {
         return users;
     }
     catch(error) {
+        if (AppDataSource.isInitialized) {
+            await AppDataSource.destroy();
+        }
         throw error;
     }
 }
@@ -40,6 +46,9 @@ async function emailAlreadyExist(emailUser: string) {
         }
     }
     catch (error) {
+        if (AppDataSource.isInitialized) {
+            await AppDataSource.destroy();
+        }
         return false;
     }
 }
