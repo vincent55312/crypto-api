@@ -29,8 +29,6 @@ export class User {
     }
 
     passwordVerify(password: string) : boolean {
-        console.log(password);
-        console.log(encryption.Crypter.decrypt(this.password));
         if (password === encryption.Crypter.decrypt(this.password)) {
             return true;
         } else {

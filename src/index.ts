@@ -1,5 +1,5 @@
 import * as express from 'express';
-import * as userRepository from './repository/user-repository';
+import { UserRepository } from './repository/user-repository';
 import * as bodyParser from 'body-parser';
 import { User } from './entity/user';
 import * as dotenv from 'dotenv';
@@ -15,6 +15,7 @@ app.post('/api/create', async (req, res) => {
     try {
         let user = User.getFromJson(req.body);
         user.encryptPassword();
+        let userRepository = new UserRepository();
         await userRepository.createUser(user);
         res.sendStatus(200);
     } catch(error) {
