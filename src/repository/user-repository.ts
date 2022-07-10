@@ -1,21 +1,23 @@
 import { AppDataSource } from "../data-source"
 import { Crypter } from "../database/tools/encryption";
 import { User } from "../entity/user"
+import { ErrorType } from "../utils/error-enum";
 
 export class UserRepository {
-    async createUser(user: User) {
+    async create(userInput: User) {
         try {
-            if (user.email == undefined || user.password == undefined || user.pseudo == undefined) {
-                throw new Error('Incorrect request');
+            if (!userInput.isValid()) {
+                throw new Error(ErrorType.INVALID_ENTITY);
             }
-            
-            if (await this.emailAlreadyExist(user.email)) {
-                throw new Error('Email : '+ user.email + ' already exist');
+
+            if (await this.emailAlreadyExist(userInput.email)) {
+                throw new Error(ErrorType.EMAIL_ALREADY_EXIST);
             }
 
             await AppDataSource.initialize();
-            let userSaved = await AppDataSource.manager.save(user);
+            let userSaved = await AppDataSource.manager.save(userInput.encryptPassword());
             await AppDataSource.destroy();
+            
             return userSaved;
         }
         catch (error) {
@@ -26,7 +28,7 @@ export class UserRepository {
         }
     }
     
-    async getAllUsers() {
+    async getAll() {
         try {
             await AppDataSource.initialize();
             let users = await AppDataSource.manager.find(User);
@@ -44,13 +46,13 @@ export class UserRepository {
     async emailAlreadyExist(emailUser: string) {
         try {
             await AppDataSource.initialize();
-            let numberUsers = (await AppDataSource.manager.findBy(User, {email: emailUser})).length
+            let numberUsers = (await AppDataSource.manager.findBy(User, {email: emailUser})).length;
+            
             await AppDataSource.destroy();
             if (numberUsers > 0) {
                 return true;
-            } else {
-                return false;
-            }
+            } 
+            return false;
         }
         catch (error) {
             if (AppDataSource.isInitialized) {
@@ -60,27 +62,26 @@ export class UserRepository {
         }
     }
 
-    async userCanLogin(userInput: User) {
-        let userCanLogin = false;
+    async canLogin(userInput: User) {
         try {
-            if (userInput.email == undefined || userInput.password == undefined) {
-                throw new Error('Incorrect request');
+            if (!userInput.isValid()) {
+                throw new Error(ErrorType.INVALID_ENTITY);
             }
 
-            if (await this.emailAlreadyExist(userInput.email) == false) {
-                throw new Error('Email is not existing');
+            if (await this.emailAlreadyExist(userInput.email) === false) {
+                throw new Error(ErrorType.WRONG_EMAIL);
             }
             await AppDataSource.initialize();
             let userToVerify = await AppDataSource.manager.findOneBy(User, {email: userInput.email});
 
             if (Crypter.encrypt(userInput.password) === userToVerify.password) {
-                userCanLogin = true;
+                if (AppDataSource.isInitialized) {
+                    await AppDataSource.destroy();
+                }
+                return userToVerify;
+            } else {
+                throw new Error(ErrorType.WRONG_PASSWORD);
             }
-
-            if (AppDataSource.isInitialized) {
-                await AppDataSource.destroy();
-            }
-            return userCanLogin;
         }
         catch (error) {
             if (AppDataSource.isInitialized) {

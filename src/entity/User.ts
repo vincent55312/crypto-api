@@ -1,13 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, Repository } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 import * as encryption from '../database/tools/encryption'
 
 @Entity()
 export class User {
+
+    constructor(id?: number, email?: string, password?: string) {
+        this.id = id || undefined;
+        this.email = email || undefined;
+        this.password = password || undefined;
+    }
+
     @PrimaryGeneratedColumn()
     id: number
-
-    @Column()
-    pseudo: string
 
     @Column()
     email: string
@@ -15,18 +19,8 @@ export class User {
     @Column()
     password: string
 
-    static getFromJson(jsonUser): User {
-        let user = new User;
-        if (jsonUser.email !== undefined) {
-            user.email = jsonUser.email;
-        }
-        if (jsonUser.pseudo !== undefined) {
-            user.pseudo = jsonUser.pseudo;
-        }
-        if (jsonUser.password !== undefined) {
-            user.password = jsonUser.password;
-        }
-        return user;
+    static getFromJson(jsonUser: any): User {
+        return new User(jsonUser.id, jsonUser.email, jsonUser.password);
     }
 
     encryptPassword(): User {
@@ -37,8 +31,20 @@ export class User {
     passwordVerify(password: string) : boolean {
         if (password === encryption.Crypter.decrypt(this.password)) {
             return true;
-        } else {
+        } 
+        
+        return false;
+    }
+
+    isValid(): boolean {
+        if (this.email === undefined || this.password === undefined) {
             return false;
         }
+
+        if (this.email.length < 5 || this.password.length < 5) {
+            return false;
+        }
+
+        return true;
     }
 }
