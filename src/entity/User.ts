@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, Repository } from "typeorm"
 import * as encryption from '../database/tools/encryption'
 
 @Entity()
@@ -17,9 +17,15 @@ export class User {
 
     static getFromJson(jsonUser): User {
         let user = new User;
-        user.email = jsonUser.email;
-        user.pseudo = jsonUser.pseudo;
-        user.password = jsonUser.password;
+        if (jsonUser.email !== undefined) {
+            user.email = jsonUser.email;
+        }
+        if (jsonUser.pseudo !== undefined) {
+            user.pseudo = jsonUser.pseudo;
+        }
+        if (jsonUser.password !== undefined) {
+            user.password = jsonUser.password;
+        }
         return user;
     }
 
