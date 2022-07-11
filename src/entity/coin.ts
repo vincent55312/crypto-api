@@ -26,10 +26,10 @@ export class Coin {
     
     static getFromJson(jsonCoin: any): Coin {
         let coin = new Coin;
-        let user = new User(jsonCoin.userId);
+        let user = new User(jsonCoin.userId) || null;
 
         coin.user = user;
-        coin.name = jsonCoin.name;
+        coin.name = jsonCoin.name.toUpperCase();
         coin.balance = jsonCoin.balance;
         return coin;
     }

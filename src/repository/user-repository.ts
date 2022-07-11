@@ -98,23 +98,21 @@ export class UserRepository {
         }
     }
 
-    async canInteract(userId: number, token: string) {
+    async canInteract(token: string) {
         try {
-            if (userId === undefined || token === undefined) {
+            if (token === undefined) {
                 throw new Error(ErrorType.AUTHENTIFICATION_FAILED);
             }
 
             await AppDataSource.initialize();
-            let user = await AppDataSource.manager.findBy(User, [{id: userId, token: token}]);
-            if (AppDataSource.isInitialized) {
-                await AppDataSource.destroy();
-            }
+            let user = await AppDataSource.manager.findBy(User, [{token: token}]);
+            await AppDataSource.destroy();
 
             if (user.length === 1) {
-                return true;
+                return user[0].id;
             } 
 
-            return false;
+            throw new Error(ErrorType.AUTHENTIFICATION_FAILED);
         } catch (error) {
             if (AppDataSource.isInitialized) {
                 await AppDataSource.destroy();

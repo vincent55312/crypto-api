@@ -85,6 +85,7 @@ export class CoinRepository {
                 coinNameAlreadyExist = true;
             }
         });
+        
         return coinNameAlreadyExist;
     }
 
