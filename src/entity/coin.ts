@@ -23,13 +23,15 @@ export class Coin {
 
     @DeleteDateColumn()
     deleted_at: Date;
+
+    market_data: any;
     
     static getFromJson(jsonCoin: any): Coin {
         let coin = new Coin;
         let user = new User(jsonCoin.userId) || null;
 
         coin.user = user;
-        coin.name = jsonCoin.name.toUpperCase();
+        coin.name = jsonCoin.name.toLowerCase();
         coin.balance = jsonCoin.balance;
         return coin;
     }
@@ -39,5 +41,9 @@ export class Coin {
             return false;
         }
         return true;
+    }
+
+    assignMarketData(market_data: any) {
+        this.market_data = market_data || [];
     }
 }

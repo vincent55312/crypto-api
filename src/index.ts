@@ -5,6 +5,7 @@ import { User } from './entity/user';
 import * as dotenv from 'dotenv';
 import { Coin } from './entity/coin';
 import { CoinRepository } from './repository/coin-repository';
+import { CoinGeckoRepository } from './repository/coingecko-repository';
 
 dotenv.config()
 
@@ -89,6 +90,7 @@ app.put('/api/coins/update', async (req, res) => {
         let coin = await coinRepository.getFromId(coinId, userId);
         coin.balance = balance;
         await coinRepository.update(coin);
+        
         res.status(200).send(coin);
     } catch(error) {
         res.status(500).send(error.message);
@@ -109,8 +111,8 @@ app.delete('/api/coins/delete', async (req, res) => {
 
         let coin = await coinRepository.getFromId(coinId, userId);
         await coinRepository.delete(new User(userId), coin);
-        res.sendStatus(200);
-        
+
+        res.sendStatus(200); 
     } catch(error) {
         res.status(500).send(error.message);
     }
@@ -126,10 +128,14 @@ app.get('/api/coins/get', async (req, res) => {
 
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
+        let coinGeckoRepository = new CoinGeckoRepository();
 
         const userId = await userRepository.canInteract(token);
 
         let coin = await coinRepository.getFromId(coinId, userId);
+        const marketData = await coinGeckoRepository.getFromName(coin.name);
+        coin.assignMarketData(marketData);
+        
         res.status(200).send(coin);
     } catch(error) {
         res.status(500).send(error.message);
@@ -143,10 +149,33 @@ app.get('/api/coins/getAll', async (req, res) => {
         const token = req.header('x-auth-token');
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
-
+        let coinGeckoRepository = new CoinGeckoRepository();
+        
         const userId = await userRepository.canInteract(token);
-
         let coins = await coinRepository.getAllForUser(new User(userId));
+
+        for await (let coin of coins) {
+            const marketData = await coinGeckoRepository.getFromName(coin.name);
+            coin.assignMarketData(marketData);
+        }
+
+        res.status(200).send(coins);
+    } catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Get Request is expected to have 
+// - token
+app.get('/api/markets', async (req, res) => {
+    try {
+        const token = req.header('x-auth-token');
+        let coinGeckoRepository = new CoinGeckoRepository();
+        let userRepository = new UserRepository();
+
+        await userRepository.canInteract(token);
+
+        let coins = await coinGeckoRepository.getAll();
         res.status(200).send(coins);
     } catch(error) {
         res.status(500).send(error.message);
