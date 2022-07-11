@@ -51,10 +51,10 @@ app.get('/api/users/connexion', async (req, res) => {
 });
 
 // Post Request is expected to have 
-// - name
-// - balance
-// - token
-app.post('/api/coins/create', async (req, res) => {
+// - header : token
+// - body : name
+// - body : balance
+app.post('/api/users/coins/create', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         let coinInput = Coin.getFromJson(req.body);
@@ -73,10 +73,10 @@ app.post('/api/coins/create', async (req, res) => {
 });
 
 // Post Request is expected to have 
-// - coinId
-// - balance
-// - token
-app.put('/api/coins/update', async (req, res) => {
+// - body : coinId
+// - body : balance
+// - header : token
+app.put('/api/users/coins/update', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const balance = req.body.balance;
@@ -98,9 +98,9 @@ app.put('/api/coins/update', async (req, res) => {
 });
 
 // Post Request is expected to have 
-// - coinId
-// - token
-app.delete('/api/coins/delete', async (req, res) => {
+// - header : token
+// - body : coinId
+app.delete('/api/users/coins/delete', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
@@ -120,8 +120,9 @@ app.delete('/api/coins/delete', async (req, res) => {
 
 
 // Get Request is expected to have 
-// - token
-app.get('/api/coins/get', async (req, res) => {
+// - header : x-auth-token
+// - body : coinId
+app.get('/api/users/coins/get', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
@@ -143,8 +144,8 @@ app.get('/api/coins/get', async (req, res) => {
 });
 
 // Get Request is expected to have 
-// - token
-app.get('/api/coins/getAll', async (req, res) => {
+// - header : token
+app.get('/api/users/coins/getAll', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         let coinRepository = new CoinRepository();
@@ -166,7 +167,7 @@ app.get('/api/coins/getAll', async (req, res) => {
 });
 
 // Get Request is expected to have 
-// - token
+// - header : token
 app.get('/api/markets', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
