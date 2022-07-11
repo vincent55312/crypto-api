@@ -5,7 +5,6 @@ import { User } from './entity/user';
 import * as dotenv from 'dotenv';
 import { Coin } from './entity/coin';
 import { CoinRepository } from './repository/coin-repository';
-import { ErrorType } from './utils/error-enum';
 
 dotenv.config()
 
@@ -56,7 +55,7 @@ app.get('/api/users/connexion', async (req, res) => {
 // - token
 app.post('/api/coins/create', async (req, res) => {
     try {
-        const token = req.body.token;
+        const token = req.header('x-auth-token');
         let coinInput = Coin.getFromJson(req.body);
         
         let coinRepository = new CoinRepository();
@@ -78,7 +77,7 @@ app.post('/api/coins/create', async (req, res) => {
 // - token
 app.put('/api/coins/update', async (req, res) => {
     try {
-        const token = req.body.token;
+        const token = req.header('x-auth-token');
         const balance = req.body.balance;
         const coinId = req.body.coinId;
 
@@ -101,7 +100,7 @@ app.put('/api/coins/update', async (req, res) => {
 // - token
 app.delete('/api/coins/delete', async (req, res) => {
     try {
-        const token = req.body.token;
+        const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
@@ -121,7 +120,7 @@ app.delete('/api/coins/delete', async (req, res) => {
 // - token
 app.get('/api/coins/getAll', async (req, res) => {
     try {
-        const token = req.body.token;
+        const token = req.header('x-auth-token');
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
 
