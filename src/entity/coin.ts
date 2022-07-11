@@ -1,20 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm"
 import { User } from "./user";
 
 @Entity()
 export class Coin {
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
     @ManyToOne(() => User, user => user.id)
     user : User;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ type: "float" }) 
-    balance: number
+    balance: number;
 
+    @CreateDateColumn()
+    created_at: Date;
+  
+    @UpdateDateColumn()
+    updated_at: Date;
+
+    @DeleteDateColumn()
+    deleted_at: Date;
+    
     static getFromJson(jsonCoin: any): Coin {
         let coin = new Coin;
         let user = new User(jsonCoin.userId);

@@ -4,4 +4,6 @@ export enum ErrorType {
     INVALID_ENTITY = "invalid entity",
     EMAIL_ALREADY_EXIST = "email already exist",
     COIN_ALREADY_EXIST = "coin already exist",
+    AUTHENTIFICATION_FAILED = "authentification failed",
+    COIN_NOT_FOUND = "coin not found"
 }

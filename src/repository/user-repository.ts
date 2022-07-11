@@ -27,15 +27,21 @@ export class UserRepository {
             throw error;
         }
     }
-    
-    async getAll() {
+
+    async update(userInput: User) {
         try {
+            if (!userInput.isValid()) {
+                throw new Error(ErrorType.INVALID_ENTITY);
+            }
+    
             await AppDataSource.initialize();
-            let users = await AppDataSource.manager.find(User);
-            await AppDataSource.destroy();
-            return users;
-        }
-        catch(error) {
+            let user = await AppDataSource.manager.save(User, userInput);
+    
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }        
+            return user;
+        } catch (error) {
             if (AppDataSource.isInitialized) {
                 await AppDataSource.destroy();
             }
@@ -78,12 +84,38 @@ export class UserRepository {
                 if (AppDataSource.isInitialized) {
                     await AppDataSource.destroy();
                 }
+
                 return userToVerify;
             } else {
                 throw new Error(ErrorType.WRONG_PASSWORD);
             }
         }
         catch (error) {
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }
+            throw error;
+        }
+    }
+
+    async canInteract(userId: number, token: string) {
+        try {
+            if (userId === undefined || token === undefined) {
+                throw new Error(ErrorType.AUTHENTIFICATION_FAILED);
+            }
+
+            await AppDataSource.initialize();
+            let user = await AppDataSource.manager.findBy(User, [{id: userId, token: token}]);
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }
+
+            if (user.length === 1) {
+                return true;
+            } 
+
+            return false;
+        } catch (error) {
             if (AppDataSource.isInitialized) {
                 await AppDataSource.destroy();
             }

@@ -27,6 +27,39 @@ export class CoinRepository {
         }
     }
 
+    async update(coin: Coin) {
+        try {
+            await AppDataSource.initialize();
+            let coinSaved = await AppDataSource.manager.save(coin);
+            await AppDataSource.destroy();
+
+            return coinSaved;
+        }
+        catch (error) {
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }
+            throw error;
+        }
+    }
+
+    async delete(user: User, coin: Coin) {
+        try {
+            if (await this.coinNameAlreadyExistForUser(user, coin.name) === false) {
+                throw new Error(ErrorType.COIN_NOT_FOUND);
+            }
+            await AppDataSource.initialize();
+            await AppDataSource.manager.delete(Coin, {id: coin.id});
+            await AppDataSource.destroy();
+        }
+        catch (error) {
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }
+            throw error;
+        }
+    }
+
     async getForUser(user: User) {
         try {
             await AppDataSource.initialize();
@@ -53,5 +86,24 @@ export class CoinRepository {
             }
         });
         return coinNameAlreadyExist;
+    }
+
+    async getFromId(coinId: number, userId: number) {
+        try {
+            await AppDataSource.initialize();
+            let coin: Coin = await AppDataSource.manager.findOneBy(Coin, [{id: coinId, user: {id: userId} }]);
+            await AppDataSource.destroy();
+            
+            if (coin === null) {
+                throw new Error(ErrorType.COIN_NOT_FOUND);
+            }
+            return coin;
+        }
+        catch (error) {
+            if (AppDataSource.isInitialized) {
+                await AppDataSource.destroy();
+            }
+            throw error;
+        }
     }
 }
