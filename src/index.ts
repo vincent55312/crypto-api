@@ -116,6 +116,26 @@ app.delete('/api/coins/delete', async (req, res) => {
     }
 });
 
+
+// Get Request is expected to have 
+// - token
+app.get('/api/coins/get', async (req, res) => {
+    try {
+        const token = req.header('x-auth-token');
+        const coinId = req.body.coinId;
+
+        let coinRepository = new CoinRepository();
+        let userRepository = new UserRepository();
+
+        const userId = await userRepository.canInteract(token);
+
+        let coin = await coinRepository.getFromId(coinId, userId);
+        res.status(200).send(coin);
+    } catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
 // Get Request is expected to have 
 // - token
 app.get('/api/coins/getAll', async (req, res) => {
@@ -126,13 +146,12 @@ app.get('/api/coins/getAll', async (req, res) => {
 
         const userId = await userRepository.canInteract(token);
 
-        let coins = await coinRepository.getForUser(new User(userId));
+        let coins = await coinRepository.getAllForUser(new User(userId));
         res.status(200).send(coins);
     } catch(error) {
         res.status(500).send(error.message);
     }
 });
-
 
 
 app.listen(port);

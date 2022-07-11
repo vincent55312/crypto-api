@@ -60,7 +60,7 @@ export class CoinRepository {
         }
     }
 
-    async getForUser(user: User) {
+    async getAllForUser(user: User) {
         try {
             await AppDataSource.initialize();
             let coinsForUser: Array<Coin> = (await AppDataSource.manager.findBy(Coin, {user: {id: user.id}}));
@@ -79,18 +79,22 @@ export class CoinRepository {
 
     async coinNameAlreadyExistForUser(user: User, coinName: string) {
         let coinNameAlreadyExist: boolean = false;
-        let coinsUser = await this.getForUser(user);
+        let coinsUser = await this.getAllForUser(user);
         coinsUser.forEach(element => {
             if (element.name.toUpperCase() === coinName.toUpperCase()) {
                 coinNameAlreadyExist = true;
             }
         });
-        
+
         return coinNameAlreadyExist;
     }
 
     async getFromId(coinId: number, userId: number) {
         try {
+            if (coinId === undefined) {
+                throw new Error(ErrorType.INVALID_ENTITY);
+            }
+
             await AppDataSource.initialize();
             let coin: Coin = await AppDataSource.manager.findOneBy(Coin, [{id: coinId, user: {id: userId} }]);
             await AppDataSource.destroy();
