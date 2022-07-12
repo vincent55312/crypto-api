@@ -43,7 +43,7 @@ export class Coin {
         return true;
     }
 
-    assignMarketData(market_data: any) {
+    hydrateMarketData(market_data: any) {
         this.market_data = market_data || [];
     }
 }

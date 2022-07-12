@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 // Post Request is expected to have 
 // - email
 // - password
-app.post('/api/users/create', async (req, res) => {
+app.post('/api/user/register', async (req, res) => {
     try {
         let userInput = User.getFromJson(req.body);
         let userRepository = new UserRepository();
@@ -35,7 +35,7 @@ app.post('/api/users/create', async (req, res) => {
 // Get Request is expected to have 
 // - email
 // - password
-app.get('/api/users/connexion', async (req, res) => {
+app.post('/api/user/login', async (req, res) => {
     try {
         let userInput = User.getFromJson(req.body);
         let userRepository = new UserRepository();
@@ -54,7 +54,7 @@ app.get('/api/users/connexion', async (req, res) => {
 // - header : token
 // - body : name
 // - body : balance
-app.post('/api/users/coins/create', async (req, res) => {
+app.post('/api/user/coins/create', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         let coinInput = Coin.getFromJson(req.body);
@@ -76,7 +76,7 @@ app.post('/api/users/coins/create', async (req, res) => {
 // - body : coinId
 // - body : balance
 // - header : token
-app.put('/api/users/coins/update', async (req, res) => {
+app.put('/api/user/coins/update', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const balance = req.body.balance;
@@ -100,7 +100,7 @@ app.put('/api/users/coins/update', async (req, res) => {
 // Post Request is expected to have 
 // - header : token
 // - body : coinId
-app.delete('/api/users/coins/delete', async (req, res) => {
+app.delete('/api/user/coins/delete', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
@@ -122,7 +122,7 @@ app.delete('/api/users/coins/delete', async (req, res) => {
 // Get Request is expected to have 
 // - header : x-auth-token
 // - body : coinId
-app.get('/api/users/coins/get', async (req, res) => {
+app.get('/api/user/coins/get', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
@@ -135,7 +135,7 @@ app.get('/api/users/coins/get', async (req, res) => {
 
         let coin = await coinRepository.getFromId(coinId, userId);
         const marketData = await coinGeckoRepository.getFromName(coin.name);
-        coin.assignMarketData(marketData);
+        coin.hydrateMarketData(marketData);
         
         res.status(200).send(coin);
     } catch(error) {
@@ -145,7 +145,7 @@ app.get('/api/users/coins/get', async (req, res) => {
 
 // Get Request is expected to have 
 // - header : token
-app.get('/api/users/coins/getAll', async (req, res) => {
+app.get('/api/user/portfolio/get', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         let coinRepository = new CoinRepository();
@@ -155,16 +155,21 @@ app.get('/api/users/coins/getAll', async (req, res) => {
         const userId = await userRepository.canInteract(token);
         let coins = await coinRepository.getAllForUser(new User(userId));
 
+        let balance = 0;
         for await (let coin of coins) {
             const marketData = await coinGeckoRepository.getFromName(coin.name);
-            coin.assignMarketData(marketData);
+            coin.hydrateMarketData(marketData);
+            if (coin.market_data.length) {
+                balance += coin.balance * coin.market_data[0].current_price;
+            }
         }
 
-        res.status(200).send(coins);
+        res.status(200).send([{'total_balance' : balance}, coins]);
     } catch(error) {
         res.status(500).send(error.message);
     }
 });
+
 
 // Get Request is expected to have 
 // - header : token
