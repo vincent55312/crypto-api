@@ -15,6 +15,16 @@ const port = process.env['LOCAL_PORT'];
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+
+app.get('/api', async (res) => {
+    try {
+        res.sendStatus(200);
+    } catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
+
 // Post Request is expected to have 
 // - email
 // - password
@@ -32,7 +42,7 @@ app.post('/api/user/register', async (req, res) => {
     }
 });
 
-// Get Request is expected to have 
+// Post Request is expected to have 
 // - email
 // - password
 app.post('/api/user/login', async (req, res) => {
