@@ -31,7 +31,7 @@ export class Coin {
         let user = new User(jsonCoin.userId) || null;
 
         coin.user = user;
-        coin.name = jsonCoin.name.toLowerCase();
+        coin.name = jsonCoin.name.toUpperCase();
         coin.balance = jsonCoin.balance;
         return coin;
     }

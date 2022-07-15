@@ -64,9 +64,7 @@ export class CoinRepository {
         try {
             await AppDataSource.initialize();
             let coinsForUser: Array<Coin> = (await AppDataSource.manager.findBy(Coin, {user: {id: user.id}}));
-            if (AppDataSource.isInitialized) {
-                await AppDataSource.destroy();
-            }
+            await AppDataSource.destroy();
             return coinsForUser;
         }
         catch (error) {

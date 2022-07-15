@@ -6,17 +6,18 @@ import * as dotenv from 'dotenv';
 import { Coin } from './entity/coin';
 import { CoinRepository } from './repository/coin-repository';
 import { CoinGeckoRepository } from './repository/coingecko-repository';
+import * as cors from 'cors';
 
 dotenv.config()
 
 const app = express();
 const port = process.env['LOCAL_PORT'];
-
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cors());
 
 
-app.get('/api', async (res) => {
+app.get('/api', async (req, res) => {
     try {
         res.sendStatus(200);
     } catch(error) {
@@ -132,65 +133,42 @@ app.delete('/api/user/coins/delete', async (req, res) => {
 // Get Request is expected to have 
 // - header : x-auth-token
 // - body : coinId
-app.get('/api/user/coins/get', async (req, res) => {
+app.post('/api/user/coins/get', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         const coinId = req.body.coinId;
 
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
-        let coinGeckoRepository = new CoinGeckoRepository();
 
         const userId = await userRepository.canInteract(token);
 
         let coin = await coinRepository.getFromId(coinId, userId);
-        const marketData = await coinGeckoRepository.getFromName(coin.name);
-        coin.hydrateMarketData(marketData);
-        
         res.status(200).send(coin);
     } catch(error) {
         res.status(500).send(error.message);
     }
 });
 
-// Get Request is expected to have 
+// Post Request is expected to have 
 // - header : token
-app.get('/api/user/portfolio/get', async (req, res) => {
+app.post('/api/user/portfolio/get', async (req, res) => {
     try {
         const token = req.header('x-auth-token');
         let coinRepository = new CoinRepository();
         let userRepository = new UserRepository();
-        let coinGeckoRepository = new CoinGeckoRepository();
         
         const userId = await userRepository.canInteract(token);
         let coins = await coinRepository.getAllForUser(new User(userId));
-
-        let balance = 0;
-        for await (let coin of coins) {
-            const marketData = await coinGeckoRepository.getFromName(coin.name);
-            coin.hydrateMarketData(marketData);
-            if (coin.market_data.length) {
-                balance += coin.balance * coin.market_data[0].current_price;
-            }
-        }
-
-        res.status(200).send([{'total_balance' : balance}, coins]);
+        res.status(200).send(coins);
     } catch(error) {
         res.status(500).send(error.message);
     }
 });
 
-
-// Get Request is expected to have 
-// - header : token
 app.get('/api/markets', async (req, res) => {
     try {
-        const token = req.header('x-auth-token');
         let coinGeckoRepository = new CoinGeckoRepository();
-        let userRepository = new UserRepository();
-
-        await userRepository.canInteract(token);
-
         let coins = await coinGeckoRepository.getAll();
         res.status(200).send(coins);
     } catch(error) {
